@@ -971,5 +971,4 @@ res = [
     },
 ]
 
-for index, value in enumerate(res):
-    print(res[index])
+print(res[30:40])

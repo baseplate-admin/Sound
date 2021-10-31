@@ -3,7 +3,6 @@ import importlib
 from libs import delayed_work
 from typing import NoReturn
 
-
 from kivy.network.urlrequest import UrlRequest
 from kivy.utils import get_color_from_hex
 
@@ -30,30 +29,30 @@ class HomeScreenController:
     the view to control its actions.
     """
 
-    def __init__(self, model):
+    def __init__(self, model) -> NoReturn:
         self.model: HomeScreenModel = model  # Model.home_screen.HomeScreenModel
         self.view = View.HomeScreen.home_screen.HomeScreenView(
             controller=self, model=self.model
         )
 
         self.result = None
-        self.result_items: int = 15
+        self.result_items: int = 20
         self.result_items_to_add: int = 10
 
         self.md_list = MDList()
+        self.md_list_widget_index: int = 0
 
         self.scroll_widget = self.view.ids.home_widgets
 
-    def fetch_songs(self, *args):
+    def fetch_songs(self, *args) -> NoReturn:
         UrlRequest(
             "https://jsonplaceholder.typicode.com/todos", self.fetch_songs_success
         )
 
-    def create_widgets(self, item):
+    def create_widgets(self, item) -> NoReturn:
         primary_color = get_color_from_hex("#b6b6b7")
         secondary_color = get_color_from_hex("#6f7c82")
 
-        # Each object is I
         music_list = MusicListWithDropdown(
             text=f"{item}",
             right_text="5.10",
@@ -64,11 +63,11 @@ class HomeScreenController:
             secondary_text_color=secondary_color,
             on_press=lambda _: self.music_list_button_press(item),
         )
-        self.md_list.add_widget(music_list)
+        index = self.md_list_widget_index or None
+
+        self.md_list.add_widget(music_list, index)
 
     def fetch_songs_success(self, req, result) -> NoReturn:
-        # Read the file. If theres no file create it and then save it.
-        # This way we can check if we have to render widgets
         self.result = result
         __result = [ele for ele in reversed(self.result[0 : self.result_items])]
 
@@ -81,7 +80,9 @@ class HomeScreenController:
         print(id)
 
     def on_scroll_start(self) -> NoReturn:
-        if self.scroll_widget.scroll_y <= 0.1:
+        self.md_list_widget_index = self.result_items
+
+        if self.scroll_widget.scroll_y <= 0.1:  # When user scrolls to bottom
             self.result_items += self.result_items_to_add
             __result = [
                 ele
@@ -92,10 +93,35 @@ class HomeScreenController:
                 )
             ]
             delayed_work(self.create_widgets, __result)
+        elif self.scroll_widget.scroll_y >= 0.9:  # When user scrolls to top
+            self.md_list_widget_index = self.result_items
+
+            self.result_items -= self.result_items_to_add
+            __result = [
+                ele
+                for ele in reversed(
+                    self.result[
+                        self.result_items - self.result_items_to_add : self.result_items
+                    ]
+                )
+            ]
+
+            delayed_work(self.create_widgets, __result)
 
     def on_scroll_end(self):
-        if self.scroll_widget.scroll_y <= 0.0:
-            for i in self.md_list.children[0:10]:
+        """"""
+        how_many_child_should_be_there: int = 15
+
+        if self.scroll_widget.scroll_y <= 0.1:  # When user scrolls to bottom
+            for i in self.md_list.children[
+                -(len(self.md_list.children) - how_many_child_should_be_there) :
+            ]:
+                self.md_list.remove_widget(i)
+
+        elif self.scroll_widget.scroll_y >= 0.9:  # When user scrolls to top
+            for i in self.md_list.children[
+                -(len(self.md_list.children) - how_many_child_should_be_there) :
+            ]:
                 self.md_list.remove_widget(i)
 
     def on_press_navbar_menu_icon(self) -> NoReturn:
