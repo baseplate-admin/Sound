@@ -1,0 +1,22 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+buildozer = {version = "*", markers = "sys_platform != 'win32'"}
+kivy = {extras = ["media"], version = "*"}
+kivymd = {file = "https://github.com/kivymd/KivyMD/archive/refs/heads/master.zip"}
+watchdog = "*"
+
+[dev-packages]
+black = "*"
+
+[requires]
+python_version = "3.9"
+
+[pipenv]
+allow_prereleases = true
+
+[scripts]
+dev = 'python ./main.py'

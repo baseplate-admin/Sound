@@ -1,0 +1,30 @@
+#:import hex kivy.utils.get_color_from_hex
+
+#:set toolbar_background_color hex('#00000')
+#:set toolbar_text_color hex('#ffffff')
+
+<HomeScreenView>
+    BoxLayout:
+        orientation: 'vertical'
+
+        MDToolbar:
+            title: "Navigation Drawer"
+            specific_text_color: toolbar_text_color
+            md_bg_color: toolbar_background_color
+            elevation: 10
+            left_action_items: [['menu', lambda _: root.controller.on_press_navbar_menu_icon()]]
+
+        ScrollView:
+            do_scroll_x: False
+            do_scroll_y: True
+            scroll_wheel_distance: 0
+            id: home_widgets
+
+            on_scroll_start: root.controller.on_scroll_start()
+            on_scroll_stop: root.controller.on_scroll_end()
+
+
+    MDNavigationDrawer:
+        id: nav_drawer
+
+        ContentNavigationDrawer:
